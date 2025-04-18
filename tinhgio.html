@@ -1,0 +1,333 @@
+<!-- Updated version with corrected SGN logic and terminal info -->
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Time Calculator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;700&display=swap" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    * { box-sizing: border-box; transition: all 0.3s ease; }
+    body {
+      margin: 0;
+      font-family: 'Be Vietnam Pro', sans-serif;
+      background: linear-gradient(135deg, #e4eefc, #fff);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .top-bar {
+      background-color: #0f1e7d;
+      padding: 16px;
+      text-align: center;
+    }
+    .top-bar h1 {
+      margin: 0;
+      color: #fff;
+      font-size: 24px;
+      font-weight: bold;
+    }
+    .container {
+      width: 100%;
+      max-width: 480px;
+      margin: 30px auto;
+      background: #fff;
+      padding: 24px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      border-radius: 12px;
+    }
+    .label-title {
+      margin: 16px 0 8px;
+      font-weight: 700;
+      font-size: 16px;
+      color: #0f1e7d;
+      display: block;
+    }
+    .btn-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .btn-option {
+      flex: 1 1 calc(50% - 4px);
+      border: 1px solid #e0e0e0;
+      background-color: #fff;
+      color: #555;
+      padding: 10px;
+      border-radius: 8px;
+      text-align: center;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 14px;
+    }
+    .btn-option.active {
+      border: 2px solid #0f1e7d;
+      color: #0f1e7d;
+      background-color: #f2f6ff;
+    }
+    select, input[type="time"] {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      margin-bottom: 16px;
+      font-size: 14px;
+      font-family: 'Be Vietnam Pro', sans-serif;
+    }
+    .result-title {
+      font-weight: bold;
+      font-size: 15px;
+      margin: 16px 0 12px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    table tr:nth-child(2n) {
+      background-color: #f9fbff;
+    }
+    th, td {
+      text-align: left;
+      padding: 10px;
+    }
+    th {
+      background-color: #eef3fc;
+      color: #0f1e7d;
+      font-weight: 600;
+    }
+    .footer {
+      text-align: center;
+      font-style: italic;
+      color: #666;
+      margin-top: 16px;
+      font-size: 13px;
+    }
+    @media (max-width: 768px) {
+      .container {
+        margin: 16px auto;
+        padding: 16px;
+      }
+      .btn-option {
+        font-size: 13px;
+        padding: 8px;
+      }
+    }
+    @media (max-width: 480px) {
+      .top-bar h1 {
+        font-size: 20px;
+      }
+      .btn-option {
+        font-size: 13px;
+      }
+      select, input[type="time"] {
+        font-size: 13px;
+      }
+      .result-title {
+        font-size: 14px;
+      }
+      table, th, td {
+        font-size: 13px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="top-bar">
+    <h1>TIME CALCULATOR</h1>
+  </div>
+  <div class="container">
+    <!-- Nội dung chính sẽ được thêm lại tại đây sau khi xử lý logic -->
+    <div id="mainContent">
+      <span class="label-title">🤵 Chọn vai trò</span>
+      <div class="btn-group" id="jobGroup">
+        <div class="btn-option" data-value="1" onclick="selectJob(1)">TIẾP VIÊN</div>
+        <div class="btn-option" data-value="0" onclick="selectJob(0)">PHI CÔNG</div>
+      </div>
+      <span class="label-title">📍 Chọn base</span>
+      <div class="btn-group" id="baseGroup">
+        <div class="btn-option" data-value="HAN" onclick="selectBase('HAN')">HAN</div>
+        <div class="btn-option" data-value="SGN" onclick="selectBase('SGN')">SGN</div>
+      </div>
+      <label class="label-title">✈️ Chọn loại chuyến bay</label>
+      <select id="flightType" onchange="calculateTimes()"></select>
+      <label for="flightTime" class="label-title">⏰ Chọn giờ cất cánh (Local Time)</label>
+      <input type="time" id="flightTime" value="22:00" oninput="calculateTimes()"/>
+      <p class="result-title" id="description">Lịch chuẩn bị ...</p>
+      <table>
+        <thead>
+          <tr>
+            <th>Loại</th>
+            <th>Giờ (Local Time)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td id="row1Label">Giờ xe đón</td>
+            <td id="row1Time">--:--</td>
+          </tr>
+          <tr>
+            <td id="row2Label">Giờ họp BRF</td>
+            <td id="row2Time">--:--</td>
+          </tr>
+          <tr id="row3" style="display:none;">
+            <td>Điểm đến</td>
+            <td id="terminalName">--</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/moment@2.29.1/moment.min.js"></script>
+    <script>
+      const flightTypeSelect = document.getElementById("flightType");
+      const row3 = document.getElementById("row3");
+      const terminalName = document.getElementById("terminalName");
+      let job = 1;
+      let base = "HAN";
+
+      const sgnPickup = [ [1,40],[1,20],[1,20],[1,30],[1,40],[2,10],[1,10],[2,15],[1,0],[1,10],[1,50] ];
+      const sgnBrf = [ [2,0],[1,40],[1,45],[1,55],[2,5],[2,35],[1,25],[2,35],[1,15],[1,25],[2,10] ];
+      const sgnTerminal = [ "Nhà ga T3","Nhà ga T2","Nhà ga T2","Nhà ga T2","Nhà ga T2","Nhà ga T2","Nhà ga T3","Nhà ga T3","Nhà ga T1","Nhà ga T2","Nhà ga T3" ];
+
+      const flightTypes = {
+        HAN: [
+          { label: "Nội địa, quốc tế ngắn (FT < 4h)", value: "0" },
+          { label: "Quốc tế tầm trung về ngay (4h ≤ FT ≤ 7h, không ký gửi)", value: "1" },
+          { label: "Quốc tế tầm trung, dài (FT ≥ 4h, có ký gửi)", value: "2" },
+          { label: "Cabin Cargo/ Belly Cargo", value: "3" },
+          { label: "Chuyên cơ", value: "4" },
+        ],
+        SGN: [
+          { label: "Nội địa (B787, A350, A321)", value: "0" },
+          { label: "Quốc tế ngắn (B787, A350, A321), FT < 4h", value: "1" },
+          { label: "Quốc tế tầm trung về ngay (4h ≤ FT ≤ 7h, không ký gửi)", value: "2" },
+          { label: "Quốc tế tầm trung (4h ≤ FT ≤ 7h)", value: "3" },
+          { label: "Quốc tế dài (FT ≥ 7h, Âu, Úc)", value: "4" },
+          { label: "Quốc tế dài (FT ≥ 7h, Mỹ)", value: "5" },
+          { label: "Cabin Cargo/ Belly Cargo", value: "6" },
+          { label: "Chuyên cơ nội địa kết hợp chở khách", value: "7" },
+          { label: "Nội địa (ATR72)", value: "8" },
+          { label: "Quốc tế (ATR72)", value: "9" },
+          { label: "Nội địa nối tiếp quốc tế tầm trung, dài có ký gửi", value: "10" },
+        ],
+      };
+
+      function selectJob(selectedJob) {
+        job = selectedJob;
+        updateActiveButton("jobGroup", job);
+        calculateTimes();
+      }
+      function selectBase(selectedBase) {
+        base = selectedBase;
+        updateActiveButton("baseGroup", base);
+        populateFlightTypes(base);
+        calculateTimes();
+      }
+      function updateActiveButton(groupId, value) {
+        const group = document.getElementById(groupId);
+        const buttons = group.getElementsByClassName("btn-option");
+        for (const btn of buttons) {
+          btn.classList.toggle("active", btn.dataset.value == value);
+        }
+      }
+      function populateFlightTypes(currentBase) {
+        flightTypeSelect.innerHTML = "";
+        const list = flightTypes[currentBase] || [];
+        list.forEach(item => {
+          const opt = document.createElement("option");
+          opt.value = item.value;
+          opt.textContent = item.label;
+          flightTypeSelect.appendChild(opt);
+        });
+      }
+      function subtractTime(timeMoment, hours, minutes) {
+        return timeMoment.clone().subtract(hours, "hours").subtract(minutes, "minutes").format("HH:mm");
+      }
+      function gioXeDon(type, job, base, flightTime) {
+        if (base === "SGN" && sgnPickup[type]) {
+          return subtractTime(flightTime, ...sgnPickup[type]);
+        }
+        if (base === "HAN") {
+          if (job == 0) { // Phi công
+            switch (type) {
+              case 0: return flightTime.hour() < 8 ? subtractTime(flightTime, 1, 55) : subtractTime(flightTime, 2, 10);
+              case 1:
+              case 2:
+              case 4: return subtractTime(flightTime, 2, 20);
+              case 3: return flightTime.hour() < 8 ? subtractTime(flightTime, 1, 55) : subtractTime(flightTime, 2, 5);
+            }
+          } else { // Tiếp viên
+            switch (type) {
+              case 0: return flightTime.hour() < 8 ? subtractTime(flightTime, 2, 0) : subtractTime(flightTime, 2, 15);
+              case 1:
+              case 2:
+              case 4: return subtractTime(flightTime, 2, 25);
+              case 3: return flightTime.hour() < 8 ? subtractTime(flightTime, 2, 0) : subtractTime(flightTime, 2, 10);
+            }
+          }
+        }
+        return "--:--";
+      }
+      function gioHop(type, base, flightTime) {
+        if (base === "SGN" && sgnBrf[type]) {
+          return subtractTime(flightTime, ...sgnBrf[type]);
+        }
+        if (base === "HAN") {
+          switch (type) {
+            case 0: return flightTime.hour() < 8 ? subtractTime(flightTime, 1, 30) : subtractTime(flightTime, 1, 35);
+            case 1:
+            case 2: return subtractTime(flightTime, 1, 45);
+            case 3: return subtractTime(flightTime, 1, 30);
+            case 4: return subtractTime(flightTime, 1, 55);
+          }
+        }
+        return "--:--";
+      }
+      function calculateTimes() {
+        const timeInput = document.getElementById("flightTime").value;
+        if (!timeInput || !flightTypeSelect.value) return;
+        const flightTypeValue = parseInt(flightTypeSelect.value);
+        const flightTime = moment(timeInput, "HH:mm");
+        const pickup = gioXeDon(flightTypeValue, job, base, flightTime);
+        const brf = gioHop(flightTypeValue, base, flightTime);
+
+        const isHAN = base === "HAN";
+        document.getElementById("row1Label").innerText = isHAN ? "Giờ xe đón" : "Giờ họp BRF";
+        document.getElementById("row2Label").innerText = isHAN ? "Giờ họp BRF" : "Giờ xe đón";
+        document.getElementById("row1Time").innerText = isHAN ? pickup : brf;
+        document.getElementById("row2Time").innerText = isHAN ? brf : pickup;
+
+        if (base === "SGN") {
+          terminalName.innerText = sgnTerminal[flightTypeValue];
+          row3.style.display = "table-row";
+        } else {
+          row3.style.display = "none";
+        }
+
+        const jobText = (job == "0") ? "phi công" : "tiếp viên";
+        const flightTypeText = document.querySelector(`#flightType option[value="${flightTypeValue}"]`).textContent;
+        document.getElementById("description").innerText = 
+          `Lịch chuẩn bị cho ${jobText} bay ${flightTypeText} tại Base ${base}`;
+      }
+      window.onload = function() {
+        updateActiveButton("jobGroup", job);
+        updateActiveButton("baseGroup", base);
+        populateFlightTypes(base);
+        calculateTimes();
+      }
+    </script>
+    <p class="footer">Nice flight ✈️ via Ha120</p>
+    <div style="margin-top: 20px; font-size: 13px; color: #444; line-height: 1.6; text-align: center;">
+      Công cụ này được tạo ra miễn phí để giúp mọi người hoàn thành công việc tốt nhất. Vậy nên, nếu bạn thấy nó có ích, hãy lan toả và cân nhắc ủng hộ bệnh nhân có hoàn cảnh khó khăn qua tài khoản:
+      <div style="margin-top: 12px; display: inline-block; padding: 12px 16px; background-color: #e4f3ff; border-radius: 8px;">
+        <span style="color: #0077b6; font-weight: bold;">
+          11300008065 – Bệnh viện Nhi Đồng 1<br>
+          Vietinbank CN 10 Ngô Gia Tự
+        </span>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
