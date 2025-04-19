@@ -4,6 +4,8 @@
 <head>
   <meta charset="UTF-8">
   <title>Time Calculator</title>
+  <link rel="manifest" href="/tinhgio/manifest.json">
+  <link rel="icon" href="/tinhgio/icon-192.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;700&display=swap" rel="stylesheet">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -329,5 +331,13 @@
       </div>
     </div>
   </div>
+  <script src="https://cdn.jsdelivr.net/npm/moment@2.29.1/moment.min.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/tinhgio/service-worker.js')
+        .then(reg => console.log('✅ Service Worker registered', reg))
+        .catch(err => console.error('❌ Service Worker failed', err));
+    }
+  </script>
 </body>
 </html>
