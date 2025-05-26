@@ -1,4 +1,3 @@
-<!-- Updated version with corrected SGN logic and terminal info -->
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -139,7 +138,6 @@
     <h1>TIME CALCULATOR</h1>
   </div>
   <div class="container">
-    <!-- Nội dung chính sẽ được thêm lại tại đây sau khi xử lý logic -->
     <div id="mainContent">
       <span class="label-title">🤵 Chọn vai trò</span>
       <div class="btn-group" id="jobGroup">
@@ -245,59 +243,79 @@
       function subtractTime(timeMoment, hours, minutes) {
         return timeMoment.clone().subtract(hours, "hours").subtract(minutes, "minutes").format("HH:mm");
       }
-      function gioXeDon(type, job, base, flightTime) {
-        if (base === "SGN" && sgnPickup[type]) {
-          return subtractTime(flightTime, ...sgnPickup[type]);
-        }
-        if (base === "HAN") {
-          if (job == 0) { // Phi công
-            switch (type) {
-              case 0: return flightTime.hour() < 8 ? subtractTime(flightTime, 1, 55) : subtractTime(flightTime, 2, 10);
-              case 1:
-              case 2:
-              case 4: return subtractTime(flightTime, 2, 20);
-              case 3: return flightTime.hour() < 8 ? subtractTime(flightTime, 1, 55) : subtractTime(flightTime, 2, 5);
-            }
-          } else { // Tiếp viên
-            switch (type) {
-              case 0: return flightTime.hour() < 8 ? subtractTime(flightTime, 2, 0) : subtractTime(flightTime, 2, 15);
-              case 1:
-              case 2:
-              case 4: return subtractTime(flightTime, 2, 25);
-              case 3: return flightTime.hour() < 8 ? subtractTime(flightTime, 2, 0) : subtractTime(flightTime, 2, 10);
-            }
-          }
-        }
-        return "--:--";
-      }
-      function gioHop(type, base, flightTime) {
-        if (base === "SGN" && sgnBrf[type]) {
-          return subtractTime(flightTime, ...sgnBrf[type]);
-        }
-        if (base === "HAN") {
-          switch (type) {
-            case 0: return flightTime.hour() < 8 ? subtractTime(flightTime, 1, 30) : subtractTime(flightTime, 1, 35);
-            case 1:
-            case 2: return subtractTime(flightTime, 1, 45);
-            case 3: return subtractTime(flightTime, 1, 30);
-            case 4: return subtractTime(flightTime, 1, 55);
-          }
-        }
-        return "--:--";
-      }
       function calculateTimes() {
         const timeInput = document.getElementById("flightTime").value;
         if (!timeInput || !flightTypeSelect.value) return;
+
         const flightTypeValue = parseInt(flightTypeSelect.value);
         const flightTime = moment(timeInput, "HH:mm");
-        const pickup = gioXeDon(flightTypeValue, job, base, flightTime);
-        const brf = gioHop(flightTypeValue, base, flightTime);
+        const hour = flightTime.hour();
+        const minutes = flightTime.minutes();
 
-        const isHAN = base === "HAN";
-        document.getElementById("row1Label").innerText = isHAN ? "Giờ xe đón" : "Giờ họp BRF";
-        document.getElementById("row2Label").innerText = isHAN ? "Giờ họp BRF" : "Giờ xe đón";
-        document.getElementById("row1Time").innerText = isHAN ? pickup : brf;
-        document.getElementById("row2Time").innerText = isHAN ? brf : pickup;
+        function isSpecialTime(hour, minutes, type) {
+  return (
+    [0, 7, 10].includes(type) && (
+      (hour > 22 || hour < 9) ||
+      (hour > 12 && hour < 18) ||
+      (hour === 22 && minutes >= 1) ||
+      (hour === 12 && minutes >= 1)
+    )
+  );
+}
+
+const inSpecialTime = isSpecialTime(hour, minutes, flightTypeValue);
+
+let pickupTime = "--:--";
+let brfTime = "--:--";
+
+if (base === "SGN") {
+  if (inSpecialTime) {
+    if (flightTypeValue === 0) {
+      pickupTime = flightTime.clone().subtract(1, "hours").subtract(25, "minutes");
+      brfTime = flightTime.clone().subtract(1, "hours").subtract(45, "minutes");
+    } else if (flightTypeValue === 10) {
+      pickupTime = flightTime.clone().subtract(1, "hours").subtract(35, "minutes");
+      brfTime = flightTime.clone().subtract(1, "hours").subtract(55, "minutes");
+    } else if (flightTypeValue === 7) {
+      pickupTime = flightTime.clone().subtract(2, "hours").subtract(5, "minutes");
+      brfTime = flightTime.clone().subtract(2, "hours").subtract(25, "minutes");
+    }
+  } else {
+    pickupTime = flightTime.clone().subtract(sgnPickup[flightTypeValue][0], "hours").subtract(sgnPickup[flightTypeValue][1], "minutes");
+    brfTime = flightTime.clone().subtract(sgnBrf[flightTypeValue][0], "hours").subtract(sgnBrf[flightTypeValue][1], "minutes");
+  }
+        } else if (base === "HAN") {
+          if (job == 0) {
+            switch (flightTypeValue) {
+              case 0: pickupTime = hour < 8 ? flightTime.clone().subtract(1, "hours").subtract(55, "minutes") : flightTime.clone().subtract(2, "hours").subtract(10, "minutes"); break;
+              case 1:
+              case 2:
+              case 4: pickupTime = flightTime.clone().subtract(2, "hours").subtract(20, "minutes"); break;
+              case 3: pickupTime = hour < 8 ? flightTime.clone().subtract(1, "hours").subtract(55, "minutes") : flightTime.clone().subtract(2, "hours").subtract(5, "minutes"); break;
+            }
+          } else {
+            switch (flightTypeValue) {
+              case 0: pickupTime = hour < 8 ? flightTime.clone().subtract(2, "hours") : flightTime.clone().subtract(2, "hours").subtract(15, "minutes"); break;
+              case 1:
+              case 2:
+              case 4: pickupTime = flightTime.clone().subtract(2, "hours").subtract(25, "minutes"); break;
+              case 3: pickupTime = hour < 8 ? flightTime.clone().subtract(2, "hours") : flightTime.clone().subtract(2, "hours").subtract(10, "minutes"); break;
+            }
+          }
+
+          switch (flightTypeValue) {
+            case 0: brfTime = hour < 8 ? flightTime.clone().subtract(1, "hours").subtract(30, "minutes") : flightTime.clone().subtract(1, "hours").subtract(35, "minutes"); break;
+            case 1:
+            case 2: brfTime = flightTime.clone().subtract(1, "hours").subtract(45, "minutes"); break;
+            case 3: brfTime = flightTime.clone().subtract(1, "hours").subtract(30, "minutes"); break;
+            case 4: brfTime = flightTime.clone().subtract(1, "hours").subtract(55, "minutes"); break;
+          }
+        }
+
+        document.getElementById("row1Label").innerText = base === "HAN" ? "Giờ xe đón" : "Giờ họp BRF";
+        document.getElementById("row2Label").innerText = base === "HAN" ? "Giờ họp BRF" : "Giờ xe đón";
+        document.getElementById("row1Time").innerText = base === "HAN" ? pickupTime.format("HH:mm") : brfTime.format("HH:mm");
+        document.getElementById("row2Time").innerText = base === "HAN" ? brfTime.format("HH:mm") : pickupTime.format("HH:mm");
 
         if (base === "SGN") {
           terminalName.innerText = sgnTerminal[flightTypeValue];
@@ -308,9 +326,10 @@
 
         const jobText = (job == "0") ? "phi công" : "tiếp viên";
         const flightTypeText = document.querySelector(`#flightType option[value="${flightTypeValue}"]`).textContent;
-        document.getElementById("description").innerText = 
+        document.getElementById("description").innerText =
           `Lịch chuẩn bị cho ${jobText} bay ${flightTypeText} tại Base ${base}`;
       }
+
       window.onload = function() {
         updateActiveButton("jobGroup", job);
         updateActiveButton("baseGroup", base);
