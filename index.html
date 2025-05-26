@@ -139,7 +139,6 @@
     <h1>TIME CALCULATOR</h1>
   </div>
   <div class="container">
-    <div id="mainContent">
     <!-- Nội dung chính sẽ được thêm lại tại đây sau khi xử lý logic -->
     <div id="mainContent">
       <span class="label-title">🤵 Chọn vai trò</span>
@@ -181,164 +180,144 @@
       </table>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/moment@2.29.1/moment.min.js"></script>
-<script>
-  const flightTypeSelect = document.getElementById("flightType");
-  const row3 = document.getElementById("row3");
-  const terminalName = document.getElementById("terminalName");
-  let job = 1;
-  let base = "HAN";
+    <script>
+      const flightTypeSelect = document.getElementById("flightType");
+      const row3 = document.getElementById("row3");
+      const terminalName = document.getElementById("terminalName");
+      let job = 1;
+      let base = "HAN";
 
-  const sgnPickup = [ [1,40],[1,20],[1,20],[1,30],[1,40],[2,10],[1,10],[2,15],[1,0],[1,10],[1,50] ];
-  const sgnBrf = [ [2,0],[1,40],[1,45],[1,55],[2,5],[2,35],[1,25],[2,35],[1,15],[1,25],[2,10] ];
-  const sgnTerminal = [ "Nhà ga T3","Nhà ga T2","Nhà ga T2","Nhà ga T2","Nhà ga T2","Nhà ga T2","Nhà ga T3","Nhà ga T3","Nhà ga T1","Nhà ga T2","Nhà ga T3" ];
+      const sgnPickup = [ [1,40],[1,20],[1,20],[1,30],[1,40],[2,10],[1,10],[2,15],[1,0],[1,10],[1,50] ];
+      const sgnBrf = [ [2,0],[1,40],[1,45],[1,55],[2,5],[2,35],[1,25],[2,35],[1,15],[1,25],[2,10] ];
+      const sgnTerminal = [ "Nhà ga T3","Nhà ga T2","Nhà ga T2","Nhà ga T2","Nhà ga T2","Nhà ga T2","Nhà ga T3","Nhà ga T3","Nhà ga T1","Nhà ga T2","Nhà ga T3" ];
 
-  const flightTypes = {
-    HAN: [
-      { label: "Nội địa, quốc tế ngắn (FT < 4h)", value: "0" },
-      { label: "Quốc tế tầm trung về ngay (4h ≤ FT ≤ 7h, không ký gửi)", value: "1" },
-      { label: "Quốc tế tầm trung, dài (FT ≥ 4h, có ký gửi)", value: "2" },
-      { label: "Cabin Cargo/ Belly Cargo", value: "3" },
-      { label: "Chuyên cơ", value: "4" },
-    ],
-    SGN: [
-      { label: "Nội địa (B787, A350, A321)", value: "0" },
-      { label: "Quốc tế ngắn (B787, A350, A321), FT < 4h", value: "1" },
-      { label: "Quốc tế tầm trung về ngay (4h ≤ FT ≤ 7h, không ký gửi)", value: "2" },
-      { label: "Quốc tế tầm trung (4h ≤ FT ≤ 7h)", value: "3" },
-      { label: "Quốc tế dài (FT ≥ 7h, Âu, Úc)", value: "4" },
-      { label: "Quốc tế dài (FT ≥ 7h, Mỹ)", value: "5" },
-      { label: "Cabin Cargo/ Belly Cargo", value: "6" },
-      { label: "Chuyên cơ nội địa kết hợp chở khách", value: "7" },
-      { label: "Nội địa (ATR72)", value: "8" },
-      { label: "Quốc tế (ATR72)", value: "9" },
-      { label: "Nội địa nối tiếp quốc tế tầm trung, dài có ký gửi", value: "10" },
-    ],
-  };
+      const flightTypes = {
+        HAN: [
+          { label: "Nội địa, quốc tế ngắn (FT < 4h)", value: "0" },
+          { label: "Quốc tế tầm trung về ngay (4h ≤ FT ≤ 7h, không ký gửi)", value: "1" },
+          { label: "Quốc tế tầm trung, dài (FT ≥ 4h, có ký gửi)", value: "2" },
+          { label: "Cabin Cargo/ Belly Cargo", value: "3" },
+          { label: "Chuyên cơ", value: "4" },
+        ],
+        SGN: [
+          { label: "Nội địa (B787, A350, A321)", value: "0" },
+          { label: "Quốc tế ngắn (B787, A350, A321), FT < 4h", value: "1" },
+          { label: "Quốc tế tầm trung về ngay (4h ≤ FT ≤ 7h, không ký gửi)", value: "2" },
+          { label: "Quốc tế tầm trung (4h ≤ FT ≤ 7h)", value: "3" },
+          { label: "Quốc tế dài (FT ≥ 7h, Âu, Úc)", value: "4" },
+          { label: "Quốc tế dài (FT ≥ 7h, Mỹ)", value: "5" },
+          { label: "Cabin Cargo/ Belly Cargo", value: "6" },
+          { label: "Chuyên cơ nội địa kết hợp chở khách", value: "7" },
+          { label: "Nội địa (ATR72)", value: "8" },
+          { label: "Quốc tế (ATR72)", value: "9" },
+          { label: "Nội địa nối tiếp quốc tế tầm trung, dài có ký gửi", value: "10" },
+        ],
+      };
 
-  function selectJob(selectedJob) {
-    job = selectedJob;
-    updateActiveButton("jobGroup", job);
-    calculateTimes();
-  }
-
-  function selectBase(selectedBase) {
-    base = selectedBase;
-    updateActiveButton("baseGroup", base);
-    populateFlightTypes(base);
-    calculateTimes();
-  }
-
-  function updateActiveButton(groupId, value) {
-    const group = document.getElementById(groupId);
-    const buttons = group.getElementsByClassName("btn-option");
-    for (const btn of buttons) {
-      btn.classList.toggle("active", btn.dataset.value == value);
-    }
-  }
-
-  function populateFlightTypes(currentBase) {
-    flightTypeSelect.innerHTML = "";
-    const list = flightTypes[currentBase] || [];
-    list.forEach(item => {
-      const opt = document.createElement("option");
-      opt.value = item.value;
-      opt.textContent = item.label;
-      flightTypeSelect.appendChild(opt);
-    });
-  }
-
-  function subtractTime(timeMoment, hours, minutes) {
-    return timeMoment.clone().subtract(hours, "hours").subtract(minutes, "minutes").format("HH:mm");
-  }
-
-  function gioXeDon(type, job, base, flightTime) {
-    const hour = flightTime.hour();
-    if (base === "SGN") {
-      if ([0, 7, 10].includes(type) && ((hour >= 22 || hour < 9) || (hour >= 12 && hour < 18))) {
-        if (type === 0) return subtractTime(flightTime, 1, 25);
-        if (type === 10) return subtractTime(flightTime, 1, 35);
-        if (type === 7) return subtractTime(flightTime, 2, 5);
+      function selectJob(selectedJob) {
+        job = selectedJob;
+        updateActiveButton("jobGroup", job);
+        calculateTimes();
       }
-      return subtractTime(flightTime, ...sgnPickup[type]);
-    }
-    if (base === "HAN") {
-      if (job == 0) {
-        switch (type) {
-          case 0: return hour < 8 ? subtractTime(flightTime, 1, 55) : subtractTime(flightTime, 2, 10);
-          case 1:
-          case 2:
-          case 4: return subtractTime(flightTime, 2, 20);
-          case 3: return hour < 8 ? subtractTime(flightTime, 1, 55) : subtractTime(flightTime, 2, 5);
-        }
-      } else {
-        switch (type) {
-          case 0: return hour < 8 ? subtractTime(flightTime, 2, 0) : subtractTime(flightTime, 2, 15);
-          case 1:
-          case 2:
-          case 4: return subtractTime(flightTime, 2, 25);
-          case 3: return hour < 8 ? subtractTime(flightTime, 2, 0) : subtractTime(flightTime, 2, 10);
+      function selectBase(selectedBase) {
+        base = selectedBase;
+        updateActiveButton("baseGroup", base);
+        populateFlightTypes(base);
+        calculateTimes();
+      }
+      function updateActiveButton(groupId, value) {
+        const group = document.getElementById(groupId);
+        const buttons = group.getElementsByClassName("btn-option");
+        for (const btn of buttons) {
+          btn.classList.toggle("active", btn.dataset.value == value);
         }
       }
-    }
-    return "--:--";
-  }
-
-  function gioHop(type, base, flightTime) {
-    const hour = flightTime.hour();
-    if (base === "SGN") {
-      if ([0, 7, 10].includes(type) && ((hour > 22 || hour < 9) || (hour > 12 && hour < 18))) {
-        if (type === 0) return subtractTime(flightTime, 1, 45);
-        if (type === 10) return subtractTime(flightTime, 1, 55);
-        if (type === 7) return subtractTime(flightTime, 2, 25);
+      function populateFlightTypes(currentBase) {
+        flightTypeSelect.innerHTML = "";
+        const list = flightTypes[currentBase] || [];
+        list.forEach(item => {
+          const opt = document.createElement("option");
+          opt.value = item.value;
+          opt.textContent = item.label;
+          flightTypeSelect.appendChild(opt);
+        });
       }
-      return subtractTime(flightTime, ...sgnBrf[type]);
-    }
-    if (base === "HAN") {
-      switch (type) {
-        case 0: return hour < 8 ? subtractTime(flightTime, 1, 30) : subtractTime(flightTime, 1, 35);
-        case 1:
-        case 2: return subtractTime(flightTime, 1, 45);
-        case 3: return subtractTime(flightTime, 1, 30);
-        case 4: return subtractTime(flightTime, 1, 55);
+      function subtractTime(timeMoment, hours, minutes) {
+        return timeMoment.clone().subtract(hours, "hours").subtract(minutes, "minutes").format("HH:mm");
       }
-    }
-    return "--:--";
-  }
+      function gioXeDon(type, job, base, flightTime) {
+        if (base === "SGN" && sgnPickup[type]) {
+          return subtractTime(flightTime, ...sgnPickup[type]);
+        }
+        if (base === "HAN") {
+          if (job == 0) { // Phi công
+            switch (type) {
+              case 0: return flightTime.hour() < 8 ? subtractTime(flightTime, 1, 55) : subtractTime(flightTime, 2, 10);
+              case 1:
+              case 2:
+              case 4: return subtractTime(flightTime, 2, 20);
+              case 3: return flightTime.hour() < 8 ? subtractTime(flightTime, 1, 55) : subtractTime(flightTime, 2, 5);
+            }
+          } else { // Tiếp viên
+            switch (type) {
+              case 0: return flightTime.hour() < 8 ? subtractTime(flightTime, 2, 0) : subtractTime(flightTime, 2, 15);
+              case 1:
+              case 2:
+              case 4: return subtractTime(flightTime, 2, 25);
+              case 3: return flightTime.hour() < 8 ? subtractTime(flightTime, 2, 0) : subtractTime(flightTime, 2, 10);
+            }
+          }
+        }
+        return "--:--";
+      }
+      function gioHop(type, base, flightTime) {
+        if (base === "SGN" && sgnBrf[type]) {
+          return subtractTime(flightTime, ...sgnBrf[type]);
+        }
+        if (base === "HAN") {
+          switch (type) {
+            case 0: return flightTime.hour() < 8 ? subtractTime(flightTime, 1, 30) : subtractTime(flightTime, 1, 35);
+            case 1:
+            case 2: return subtractTime(flightTime, 1, 45);
+            case 3: return subtractTime(flightTime, 1, 30);
+            case 4: return subtractTime(flightTime, 1, 55);
+          }
+        }
+        return "--:--";
+      }
+      function calculateTimes() {
+        const timeInput = document.getElementById("flightTime").value;
+        if (!timeInput || !flightTypeSelect.value) return;
+        const flightTypeValue = parseInt(flightTypeSelect.value);
+        const flightTime = moment(timeInput, "HH:mm");
+        const pickup = gioXeDon(flightTypeValue, job, base, flightTime);
+        const brf = gioHop(flightTypeValue, base, flightTime);
 
-  function calculateTimes() {
-    const timeInput = document.getElementById("flightTime").value;
-    if (!timeInput || !flightTypeSelect.value) return;
-    const flightTypeValue = parseInt(flightTypeSelect.value);
-    const flightTime = moment(timeInput, "HH:mm");
-    const pickup = gioXeDon(flightTypeValue, job, base, flightTime);
-    const brf = gioHop(flightTypeValue, base, flightTime);
+        const isHAN = base === "HAN";
+        document.getElementById("row1Label").innerText = isHAN ? "Giờ xe đón" : "Giờ họp BRF";
+        document.getElementById("row2Label").innerText = isHAN ? "Giờ họp BRF" : "Giờ xe đón";
+        document.getElementById("row1Time").innerText = isHAN ? pickup : brf;
+        document.getElementById("row2Time").innerText = isHAN ? brf : pickup;
 
-    const isHAN = base === "HAN";
-    document.getElementById("row1Label").innerText = isHAN ? "Giờ xe đón" : "Giờ họp BRF";
-    document.getElementById("row2Label").innerText = isHAN ? "Giờ họp BRF" : "Giờ xe đón";
-    document.getElementById("row1Time").innerText = isHAN ? pickup : brf;
-    document.getElementById("row2Time").innerText = isHAN ? brf : pickup;
+        if (base === "SGN") {
+          terminalName.innerText = sgnTerminal[flightTypeValue];
+          row3.style.display = "table-row";
+        } else {
+          row3.style.display = "none";
+        }
 
-    if (base === "SGN") {
-      terminalName.innerText = sgnTerminal[flightTypeValue];
-      row3.style.display = "table-row";
-    } else {
-      row3.style.display = "none";
-    }
-
-    const jobText = (job == "0") ? "phi công" : "tiếp viên";
-    const flightTypeText = document.querySelector(`#flightType option[value="${flightTypeValue}"]`).textContent;
-    document.getElementById("description").innerText = 
-      `Lịch chuẩn bị cho ${jobText} bay ${flightTypeText} tại Base ${base}`;
-  }
-
-  window.onload = function() {
-    updateActiveButton("jobGroup", job);
-    updateActiveButton("baseGroup", base);
-    populateFlightTypes(base);
-    calculateTimes();
-  }
-</script>
+        const jobText = (job == "0") ? "phi công" : "tiếp viên";
+        const flightTypeText = document.querySelector(`#flightType option[value="${flightTypeValue}"]`).textContent;
+        document.getElementById("description").innerText = 
+          `Lịch chuẩn bị cho ${jobText} bay ${flightTypeText} tại Base ${base}`;
+      }
+      window.onload = function() {
+        updateActiveButton("jobGroup", job);
+        updateActiveButton("baseGroup", base);
+        populateFlightTypes(base);
+        calculateTimes();
+      }
+    </script>
     <p class="footer">Nice flight ✈️ via Ha120</p>
     <div style="margin-top: 20px; font-size: 13px; color: #444; line-height: 1.6; text-align: center;">
       Công cụ này được tạo ra miễn phí để giúp acb hoàn thành công việc tốt hơn. Vậy nên, nếu nó có ích, hãy chia sẻ và cân nhắc dành chút tình cảm cho bệnh nhân có hoàn cảnh khó khăn qua STK này nha:
