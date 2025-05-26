@@ -6,6 +6,15 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;700&display=swap" rel="stylesheet">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+
+  <!-- Link đến manifest và các icon -->
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+  <link rel="apple-touch-icon" href="icon-512.png">
+
   <style>
     * { box-sizing: border-box; transition: all 0.3s ease; }
     body {
@@ -132,15 +141,44 @@
       }
     }
   </style>
-<!-- Link đến manifest và các icon -->
-<link rel="manifest" href="manifest.json">
-<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
-<link rel="apple-touch-icon" href="icon-512.png">
 </head>
 <body>
   <div class="top-bar">
     <h1>TIME CALCULATOR</h1>
   </div>
+
+  
+  <!-- Thêm thông báo cập nhật mới -->
+  <script>
+    window.addEventListener('load', () => {
+      fetch(window.location.href, { cache: "no-store" }).then(response => {
+        if (!response.ok) return;
+        const lastModified = response.headers.get('Last-Modified');
+        const cached = localStorage.getItem('lastLoaded');
+  
+        if (cached && cached !== lastModified) {
+          const reloadNotice = document.createElement('div');
+          reloadNotice.textContent = 'Có bản cập nhật mới, vui lòng tải lại trang.';
+          reloadNotice.style = `
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #0f1e7d;
+            color: #fff;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            z-index: 1000;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+          `;
+          document.body.appendChild(reloadNotice);
+        }
+  
+        localStorage.setItem('lastLoaded', lastModified);
+      });
+    });
+  </script>  
   <div class="container">
     <div id="mainContent">
       <span class="label-title">🤵 Chọn vai trò</span>
