@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Time Calculator</title>
-    <!-- version 2.1 -->
+    <!-- version 2.2 -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;700&display=swap" rel="stylesheet">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -146,7 +146,7 @@
 <body>
   <div class="top-bar" style="background-color: #0f1e7d; padding: 16px; text-align: center;">
     <h1>TIME CALCULATOR</h1>
-    <p style="color: #fff; font-size: 12px; margin-top: 4px;">Updated: 27.05.2025</p>
+    <p style="color: #fff; font-size: 12px; margin-top: 4px;">Updated: 16.06.2025</p>
   </div>
 
   
@@ -229,9 +229,9 @@
       let job = 1;
       let base = "HAN";
 
-      const sgnPickup = [ [1,40],[1,20],[1,20],[1,30],[1,40],[2,10],[1,10],[2,15],[1,0],[1,10],[1,50] ];
-      const sgnBrf = [ [2,0],[1,40],[1,45],[1,55],[2,5],[2,35],[1,25],[2,35],[1,15],[1,25],[2,10] ];
-      const sgnTerminal = [ "Nhà ga T3","Nhà ga T2","Nhà ga T2","Nhà ga T2","Nhà ga T2","Nhà ga T2","Nhà ga T3","Nhà ga T3","Nhà ga T1","Nhà ga T2","Nhà ga T3" ];
+      const sgnPickup = [ [1,25],[1,20],[1,20],[1,30],[1,40],[2,10],[1,10],[2,0],[1,0],[1,10],[1,35],[1,15] ];
+      const sgnBrf = [ [1,45],[1,40],[1,45],[1,55],[2,5],[2,35],[1,25],[2,20],[1,15],[1,25],[1,55],[1,30] ];
+      const sgnTerminal = [ "Nhà ga T3","Nhà ga T2","Nhà ga T2","Nhà ga T2","Nhà ga T2","Nhà ga T2","Nhà ga T3","Nhà ga T3","Nhà ga T1","Nhà ga T2","Nhà ga T3","Nhà ga T3" ];
 
       const flightTypes = {
         HAN: [
@@ -250,9 +250,10 @@
           { label: "Quốc tế dài (FT ≥ 7h, Mỹ)", value: "5" },
           { label: "Cabin Cargo/ Belly Cargo", value: "6" },
           { label: "Chuyên cơ nội địa kết hợp chở khách", value: "7" },
-          { label: "Nội địa (ATR72)", value: "8" },
+          { label: "Nội địa (ATR72 Đường bay VCS, CAH, VKG)", value: "8" },
           { label: "Quốc tế (ATR72)", value: "9" },
           { label: "Nội địa nối tiếp quốc tế tầm trung, dài có ký gửi", value: "10" },
+          { label: "Nội địa (ATR72 Đường bay DLI, PXU, TBB, BMV)", value: "11" },
         ],
       };
 
@@ -321,8 +322,8 @@ if (base === "SGN") {
       pickupTime = flightTime.clone().subtract(1, "hours").subtract(35, "minutes");
       brfTime = flightTime.clone().subtract(1, "hours").subtract(55, "minutes");
     } else if (flightTypeValue === 7) {
-      pickupTime = flightTime.clone().subtract(2, "hours").subtract(5, "minutes");
-      brfTime = flightTime.clone().subtract(2, "hours").subtract(25, "minutes");
+      pickupTime = flightTime.clone().subtract(2, "hours").subtract(0, "minutes");
+      brfTime = flightTime.clone().subtract(2, "hours").subtract(20, "minutes");
     }
   } else {
     pickupTime = flightTime.clone().subtract(sgnPickup[flightTypeValue][0], "hours").subtract(sgnPickup[flightTypeValue][1], "minutes");
