@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Time Calculator</title>
-    <!-- version 2.3 -->
+    <!-- version 2.6 -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;700&display=swap" rel="stylesheet">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -171,14 +171,19 @@
   <!-- Thêm thông báo cập nhật mới -->
   <script>
     window.addEventListener('load', () => {
+      // So số phiên bản (dòng "<!-- version x.y -->" trên đầu file) của trang đang mở với bản trên server.
+      // Chỉ báo khi bản trên server khác bản đang mở. Mỗi lần cập nhật nhớ tăng số version.
+      const versionOf = html => (html.match(/<!--\s*version\s+([\d.]+)\s*-->/) || [])[1];
+      const currentVersion = versionOf(document.documentElement.outerHTML);
       fetch(window.location.href, { cache: "no-store" }).then(response => {
-        if (!response.ok) return;
-        const lastModified = response.headers.get('Last-Modified');
-        const cached = localStorage.getItem('lastLoaded');
-  
-        if (cached && cached !== lastModified) {
+        if (!response.ok) return null;
+        return response.text();
+      }).then(html => {
+        if (!html) return;
+        const latestVersion = versionOf(html);
+        if (currentVersion && latestVersion && currentVersion !== latestVersion) {
           const reloadNotice = document.createElement('div');
-          reloadNotice.textContent = 'Có bản cập nhật mới, vui lòng tải lại trang.';
+          reloadNotice.textContent = 'Có bản cập nhật mới, chạm vào đây để tải lại.';
           reloadNotice.style = `
             position: fixed;
             bottom: 20px;
@@ -192,10 +197,10 @@
             z-index: 1000;
             box-shadow: 0 4px 8px rgba(0,0,0,0.2);
           `;
+          reloadNotice.style.cursor = 'pointer';
+          reloadNotice.onclick = () => window.location.reload();
           document.body.appendChild(reloadNotice);
         }
-  
-        localStorage.setItem('lastLoaded', lastModified);
       }).catch(() => { /* mất mạng: bỏ qua kiểm tra cập nhật */ });
     });
 
@@ -446,8 +451,8 @@ if (base === "SGN") {
     </script>
     <p class="footer">Nice flight ✈️ via Ha120</p>
     <div style="margin-top: 20px; font-size: 13px; color: #444; line-height: 1.6; text-align: center;">
-      Công cụ này được tạo ra miễn phí để giúp acb hoàn thành công việc tốt hơn. Vậy nên, nếu nó có ích, hãy chia sẻ và cân nhắc dành chút tình cảm cho bệnh nhân có hoàn cảnh khó khăn qua STK này nha:
-      <div style="margin-top: 12px; display: inline-block; padding: 12px 16px; background-color: #e4f3ff; border-radius: 8px;">
+      Công cụ được phát triển miễn phí để giúp anh chị em thuận tiện hơn khi đi bay. Nếu thấy hữu ích, ace hãy chia sẻ và cân nhắc dành chút tình cảm cho bệnh nhi có hoàn cảnh khó khăn qua <span style="white-space: nowrap;">TK này nha:</span>
+      <div style="margin: 12px auto 0; display: table; padding: 12px 16px; background-color: #e4f3ff; border-radius: 8px;">
         <span style="color: #0077b6; font-weight: bold;">
           113000008065 – Bệnh viện Nhi Đồng 1<br>
           Vietinbank CN 10 Ngô Gia Tự
