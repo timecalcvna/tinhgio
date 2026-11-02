@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Time Calculator</title>
-    <!-- version 2.2 -->
+    <!-- version 2.3 -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;700&display=swap" rel="stylesheet">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -82,8 +82,26 @@
       border: 1px solid #ccc;
       border-radius: 6px;
       margin-bottom: 16px;
-      font-size: 14px;
+      font-size: 16px; /* >= 16px để Safari iOS không tự zoom khi chạm */
       font-family: 'Be Vietnam Pro', sans-serif;
+      /* Đồng nhất 2 ô trên mọi trình duyệt (đặc biệt Safari iOS) */
+      display: block;
+      height: 44px;
+      min-width: 0;
+      background-color: #fff;
+      color: #222;
+      line-height: normal;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+    select {
+      padding-right: 36px;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%230f1e7d' stroke-width='2'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+    }
+    input[type="time"]::-webkit-date-and-time-value {
+      text-align: left;
     }
     .result-title {
       font-weight: bold;
@@ -132,7 +150,7 @@
         font-size: 13px;
       }
       select, input[type="time"] {
-        font-size: 13px;
+        font-size: 16px; /* >= 16px để Safari iOS không tự zoom khi chạm */
       }
       .result-title {
         font-size: 14px;
@@ -146,7 +164,7 @@
 <body>
   <div class="top-bar" style="background-color: #0f1e7d; padding: 16px; text-align: center;">
     <h1>TIME CALCULATOR</h1>
-    <p style="color: #fff; font-size: 12px; margin-top: 4px;">Updated: 21.04.2026</p>
+    <p style="color: #fff; font-size: 12px; margin-top: 4px;">Updated: 01.11.2026</p>
   </div>
 
   
@@ -178,7 +196,7 @@
         }
   
         localStorage.setItem('lastLoaded', lastModified);
-      });
+      }).catch(() => { /* mất mạng: bỏ qua kiểm tra cập nhật */ });
     });
   </script>  
   <div class="container">
@@ -221,7 +239,23 @@
         </tbody>
       </table>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/moment@2.29.1/moment.min.js"></script>
+    <script>
+      // Thay thế moment.js (bỏ phụ thuộc CDN): chỉ hỗ trợ đúng các hàm công cụ đang dùng
+      function TimeHM(totalMinutes) { this.m = totalMinutes; }
+      TimeHM.prototype.clone = function () { return new TimeHM(this.m); };
+      TimeHM.prototype.subtract = function (n, unit) { this.m -= unit === "hours" ? n * 60 : n; return this; };
+      TimeHM.prototype.norm = function () { return ((this.m % 1440) + 1440) % 1440; };
+      TimeHM.prototype.hour = function () { return Math.floor(this.norm() / 60); };
+      TimeHM.prototype.minutes = function () { return this.norm() % 60; };
+      TimeHM.prototype.format = function () {
+        const pad = n => String(n).padStart(2, "0");
+        return pad(this.hour()) + ":" + pad(this.minutes());
+      };
+      function moment(str) {
+        const [h, m] = String(str).split(":").map(Number);
+        return new TimeHM(h * 60 + m);
+      }
+    </script>
     <script>
       const flightTypeSelect = document.getElementById("flightType");
       const row3 = document.getElementById("row3");
@@ -235,9 +269,10 @@
 
       const flightTypes = {
         HAN: [
-          { label: "Nội địa, quốc tế ngắn (FT < 4h)", value: "0" },
-          { label: "Quốc tế tầm trung về ngay (4h ≤ FT ≤ 7h, không ký gửi)", value: "1" },
-          { label: "Quốc tế tầm trung, dài (FT ≥ 4h, có ký gửi)", value: "2" },
+          { label: "Nội địa", value: "0" },
+          { label: "Quốc tế ngắn (FT < 4h)", value: "5" },
+          { label: "Quốc tế tầm trung về ngay (4h ≤ FT ≤ 7h, có HLKG: ICN, HND về ngay...)", value: "1" },
+          { label: "Quốc tế tầm trung (FT ≥ 4h, có HLKG), dài (FT ≥ 7h, có HLKG), Âu/Úc đêm", value: "2" },
           { label: "Cabin Cargo/ Belly Cargo", value: "3" },
           { label: "Chuyên cơ", value: "4" },
         ],
@@ -330,37 +365,57 @@ if (base === "SGN") {
     brfTime = flightTime.clone().subtract(sgnBrf[flightTypeValue][0], "hours").subtract(sgnBrf[flightTypeValue][1], "minutes");
   }
         } else if (base === "HAN") {
+          // Phi công: giữ nguyên quy định cũ (TB-761 chỉ áp dụng cho Tiếp viên)
           if (job == 0) {
             switch (flightTypeValue) {
-              case 0: pickupTime = hour < 8 ? flightTime.clone().subtract(1, "hours").subtract(55, "minutes") : flightTime.clone().subtract(2, "hours").subtract(10, "minutes"); break;
+              case 0:
+              case 5: pickupTime = hour < 8 ? flightTime.clone().subtract(1, "hours").subtract(55, "minutes") : flightTime.clone().subtract(2, "hours").subtract(10, "minutes"); break;
               case 1:
               case 2:
               case 4: pickupTime = flightTime.clone().subtract(2, "hours").subtract(20, "minutes"); break;
               case 3: pickupTime = hour < 8 ? flightTime.clone().subtract(1, "hours").subtract(55, "minutes") : flightTime.clone().subtract(2, "hours").subtract(5, "minutes"); break;
             }
           } else {
+            // Tiếp viên: theo Phụ lục TB-761 (hiệu lực 01/11/2026)
             switch (flightTypeValue) {
               case 0: pickupTime = hour < 8 ? flightTime.clone().subtract(2, "hours") : flightTime.clone().subtract(2, "hours").subtract(15, "minutes"); break;
-              case 1:
-              case 2:
+              case 5: pickupTime = hour < 8 ? flightTime.clone().subtract(2, "hours").subtract(10, "minutes") : flightTime.clone().subtract(2, "hours").subtract(25, "minutes"); break;
+              case 1: pickupTime = flightTime.clone().subtract(2, "hours").subtract(30, "minutes"); break;
+              case 2: pickupTime = flightTime.clone().subtract(2, "hours").subtract(35, "minutes"); break;
               case 4: pickupTime = flightTime.clone().subtract(2, "hours").subtract(25, "minutes"); break;
               case 3: pickupTime = hour < 8 ? flightTime.clone().subtract(2, "hours") : flightTime.clone().subtract(2, "hours").subtract(10, "minutes"); break;
             }
           }
 
-          switch (flightTypeValue) {
-            case 0: brfTime = hour < 8 ? flightTime.clone().subtract(1, "hours").subtract(30, "minutes") : flightTime.clone().subtract(1, "hours").subtract(35, "minutes"); break;
-            case 1:
-            case 2: brfTime = flightTime.clone().subtract(1, "hours").subtract(45, "minutes"); break;
-            case 3: brfTime = flightTime.clone().subtract(1, "hours").subtract(30, "minutes"); break;
-            case 4: brfTime = flightTime.clone().subtract(1, "hours").subtract(55, "minutes"); break;
+          if (job == 0) {
+            // Phi công: giữ nguyên giờ BRF cũ
+            switch (flightTypeValue) {
+              case 0:
+              case 5: brfTime = hour < 8 ? flightTime.clone().subtract(1, "hours").subtract(30, "minutes") : flightTime.clone().subtract(1, "hours").subtract(35, "minutes"); break;
+              case 1:
+              case 2: brfTime = flightTime.clone().subtract(1, "hours").subtract(45, "minutes"); break;
+              case 3: brfTime = flightTime.clone().subtract(1, "hours").subtract(30, "minutes"); break;
+              case 4: brfTime = flightTime.clone().subtract(1, "hours").subtract(55, "minutes"); break;
+            }
+          } else {
+            // Tiếp viên: theo Phụ lục TB-761
+            switch (flightTypeValue) {
+              case 0: brfTime = hour < 8 ? flightTime.clone().subtract(1, "hours").subtract(30, "minutes") : flightTime.clone().subtract(1, "hours").subtract(35, "minutes"); break;
+              case 5: brfTime = hour < 8 ? flightTime.clone().subtract(1, "hours").subtract(40, "minutes") : flightTime.clone().subtract(1, "hours").subtract(45, "minutes"); break;
+              case 1: brfTime = flightTime.clone().subtract(1, "hours").subtract(50, "minutes"); break;
+              case 2: brfTime = flightTime.clone().subtract(1, "hours").subtract(55, "minutes"); break;
+              case 3: brfTime = flightTime.clone().subtract(1, "hours").subtract(30, "minutes"); break;
+              case 4: brfTime = flightTime.clone().subtract(1, "hours").subtract(55, "minutes"); break;
+            }
           }
         }
 
         document.getElementById("row1Label").innerText = base === "HAN" ? "Giờ xe đón" : "Giờ họp BRF";
         document.getElementById("row2Label").innerText = base === "HAN" ? "Giờ họp BRF" : "Giờ xe đón";
-        document.getElementById("row1Time").innerText = base === "HAN" ? pickupTime.format("HH:mm") : brfTime.format("HH:mm");
-        document.getElementById("row2Time").innerText = base === "HAN" ? brfTime.format("HH:mm") : pickupTime.format("HH:mm");
+        // Gắn nhãn "(hôm trước)" khi giờ tính ra lùi qua 00:00 so với ngày cất cánh
+        const showTime = t => t.format("HH:mm") + (t.m < 0 ? " (hôm trước)" : "");
+        document.getElementById("row1Time").innerText = base === "HAN" ? showTime(pickupTime) : showTime(brfTime);
+        document.getElementById("row2Time").innerText = base === "HAN" ? showTime(brfTime) : showTime(pickupTime);
 
         if (base === "SGN") {
           terminalName.innerText = sgnTerminal[flightTypeValue];
