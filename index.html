@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Time Calculator</title>
-    <!-- version 2.6 -->
+    <!-- version 2.7 -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;700&display=swap" rel="stylesheet">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -28,7 +28,7 @@
     }
     .top-bar {
       background-color: #0f1e7d;
-      padding: 16px;
+      padding: 14px 16px;
       text-align: center;
     }
     .top-bar h1 {
@@ -47,7 +47,7 @@
       border-radius: 12px;
     }
     .label-title {
-      margin: 16px 0 8px;
+      margin: 14px 0 8px;
       font-weight: 700;
       font-size: 16px;
       color: #0f1e7d;
@@ -57,7 +57,10 @@
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
-      margin-bottom: 16px;
+      margin-bottom: 12px;
+    }
+    #mainContent > .label-title:first-child {
+      margin-top: 0;
     }
     .btn-option {
       flex: 1 1 calc(50% - 4px);
@@ -81,7 +84,7 @@
       padding: 10px;
       border: 1px solid #ccc;
       border-radius: 6px;
-      margin-bottom: 16px;
+      margin-bottom: 12px;
       font-size: 16px; /* >= 16px để Safari iOS không tự zoom khi chạm */
       font-family: 'Be Vietnam Pro', sans-serif;
       /* Đồng nhất 2 ô trên mọi trình duyệt (đặc biệt Safari iOS) */
@@ -104,9 +107,10 @@
       text-align: left;
     }
     .result-title {
+      text-wrap: balance;
       font-weight: bold;
       font-size: 15px;
-      margin: 16px 0 12px;
+      margin: 18px 0 10px;
     }
     table {
       width: 100%;
@@ -134,12 +138,12 @@
     }
     @media (max-width: 768px) {
       .container {
-        margin: 16px auto;
-        padding: 16px;
+        margin: 12px auto;
+        padding: 18px 16px;
       }
       .btn-option {
-        font-size: 13px;
-        padding: 8px;
+        font-size: 15px;
+        padding: 10px;
       }
     }
     @media (max-width: 480px) {
@@ -147,16 +151,16 @@
         font-size: 20px;
       }
       .btn-option {
-        font-size: 13px;
+        font-size: 15px;
       }
       select, input[type="time"] {
         font-size: 16px; /* >= 16px để Safari iOS không tự zoom khi chạm */
       }
       .result-title {
-        font-size: 14px;
+        font-size: 15px;
       }
       table, th, td {
-        font-size: 13px;
+        font-size: 15px;
       }
     }
   </style>
@@ -164,7 +168,7 @@
 <body>
   <div class="top-bar" style="background-color: #0f1e7d; padding: 16px; text-align: center;">
     <h1>TIME CALCULATOR</h1>
-    <p style="color: #fff; font-size: 12px; margin-top: 4px;">Updated: 01.11.2026</p>
+    <p style="color: #fff; font-size: 12px; margin: 4px 0 0;">Updated: 01.11.2026</p>
   </div>
 
   
