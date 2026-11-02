@@ -198,6 +198,13 @@
         localStorage.setItem('lastLoaded', lastModified);
       }).catch(() => { /* mất mạng: bỏ qua kiểm tra cập nhật */ });
     });
+
+    // Đăng ký service worker: cho phép mở trang khi mất mạng, vẫn luôn ưu tiên bản mới nhất
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('service-worker.js').catch(() => {});
+      });
+    }
   </script>  
   <div class="container">
     <div id="mainContent">
